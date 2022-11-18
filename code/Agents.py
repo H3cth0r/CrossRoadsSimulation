@@ -51,10 +51,62 @@ class TrafficLightAgent(ms.Agent):
         newPos = (self.pos[0] + dx, self.pos[1] + dy)
         self.distLeft -= self.velocity
         self.model.grid.move_agent(self, newPos)
+    
+    def checkLane(self, coords_before_crossroad, coords_start_of_street):
+        if coords_before_crossroad[0] == coords_start_of_street[0]:    # Case horizontal
+            it_coords = list(coords_before_crossroad)
+            if coords_before_crossroad < coords_start_of_street:
+                for i in range(coords_before_crossroad[1], coords_start_of_street[1]):
+                    it_coords[1] = i
+                    current_cell = self.model.grid.get_cell_list_contents([tuple(it_coords)])
+                    car = [obj for obj in current_cell if isinstance(obj, CarAgent)]
+                    if len(car)>0:
+                        return car[0]
+            else:
+                for i in reversed(range(coords_start_of_street[1], coords_before_crossroad[1])):
+                    it_coords[1] = i
+                    current_cell = self.model.grid.get_cell_list_contents([tuple(it_coords)])
+                    car = [obj for obj in current_cell if isinstance(obj, CarAgent)]
+                    if len(car)>0:
+                        return car[0]
+        else:
+            it_coords = list(coords_before_crossroad)
+            if coords_before_crossroad < coords_start_of_street:
+                for i in range(coords_before_crossroad[0], coords_start_of_street[0]):
+                    it_coords[0] = i
+                    current_cell = self.model.grid.get_cell_list_contents([tuple(it_coords)])
+                    car = [obj for obj in current_cell if isinstance(obj, CarAgent)]
+                    if len(car)>0:
+                        return car[0]
+            else:
+                for i in reversed(range(coords_start_of_street[0], coords_before_crossroad[0])):
+                    it_coords[0] = i
+                    current_cell = self.model.grid.get_cell_list_contents([tuple(it_coords)])
+                    car = [obj for obj in current_cell if isinstance(obj, CarAgent)]
+                    if len(car)>0:
+                        return car[0]
+        return CarAgent(33, self.model, 0, 2, [1, 0], 14)
+
+                
+
+
+
+    def checkNextCar(self):
+        nextCar = CarAgent(33, self.model, 0, 2, [1, 0], 14)
+        if self.lane == 0:
+            nextCar = self.checkLane((16, 15), (16, 0))
+        elif self.lane == 1:
+            nextCar = self.checkLane((15, 17), (15, 31))
+        elif self.lane == 2:
+            nextCar = self.checkLane((17, 16), (31, 16))
+        elif self.lane == 3:
+            nextCar = self.checkLane((15, 15), (0, 15))
+        print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
 
     def step(self):
-        choices = [-1, 0, 1, 2]
+        choices = [0, 1, 2]
         self.light = random.choice(choices)
+        self.checkNextCar()
 
 class CarAgent(ms.Agent):
 
