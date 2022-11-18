@@ -1,6 +1,7 @@
 import mesa as ms
 from math import ceil
 from Models import *
+import random
 
 class GrassAgent(ms.Agent):
     def __init__(self, id_t, model):
@@ -12,6 +13,7 @@ class VaccumAgentModel(ms.Agent):
     def __init__(self, id_t, model):
         super().__init__(id_t, model)
         self.id = id_t
+        self.state = False
 
     def move(self):
         next_move = self.model.grid.get_neighborhood(
@@ -30,11 +32,11 @@ class VaccumAgentModel(ms.Agent):
 """
 
 class TrafficLightAgent(ms.Agent):
-
     def __init__(self, unique_id, model, lane):
         super().__init__(unique_id, model)
-        self.lane = lane #0 = up, 1 = down, 2 = left, 3 = right
-        self.light = 1 #0 = red, 1 = yellow, 2 = green
+        self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
+        self.light = 1      #0 = red, 1 = yellow, 2 = green
+        new_pos = (17, 14)
 
 
     def checkCar(self):
@@ -51,7 +53,8 @@ class TrafficLightAgent(ms.Agent):
         self.model.grid.move_agent(self, newPos)
 
     def step(self):
-        self.move()
+        choices = [-1, 0, 1, 2]
+        self.light = random.choice(choices)
 
 class CarAgent(ms.Agent):
 

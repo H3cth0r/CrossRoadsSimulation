@@ -1,5 +1,5 @@
 import mesa as ms
-from Agents import *
+from Agents import GrassAgent, TrafficLightAgent, CarAgent
 from random import choice
 
 
@@ -16,7 +16,9 @@ class RoomModel(ms.Model):
         ]
         carsInLane = [0, 0, 0, 0]
         counter = 0
-        
+
+
+
         for i in range(nCars):
             invalidDirection = True #delete when multiple cars per lane are available
             while invalidDirection:
@@ -81,6 +83,21 @@ class RoomModel(ms.Model):
                 elif (x >= 17 and x < 232) and ((y>=0 and y < 15) or y>= 17 and y < 32):
                     self.grid.place_agent(pasto, (x, y))
                 counter += 1
+
+        # adding trafic light agents to grid
+        TFS_0 =   TrafficLightAgent(counter, self, 0)
+        TFS_1 =   TrafficLightAgent(6, self, 1)
+        TFS_2 =   TrafficLightAgent(7, self, 2)
+        TFS_3 =   TrafficLightAgent(8, self, 3)
+        #for TFL in TFS:self.schedule.add(TFL)
+        self.schedule.add(TFS_0)
+        self.grid.place_agent(TFS_0, (17, 14))   #up
+        self.schedule.add(TFS_1)
+        self.grid.place_agent(TFS_1, (14, 17))   #down
+        self.schedule.add(TFS_2)
+        self.grid.place_agent(TFS_2, (17, 17))   #left
+        self.schedule.add(TFS_3)
+        self.grid.place_agent(TFS_3, (14, 14))   #right
         
         self.datacollector_currents = ms.DataCollector({
             "Wealthy Agents": RoomModel.current_weathy_agents,
@@ -112,6 +129,4 @@ class RoomModel(ms.Model):
 
     def step(self):
         self.schedule.step()
-
-
 
