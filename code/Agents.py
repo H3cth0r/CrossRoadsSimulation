@@ -101,12 +101,16 @@ class TrafficLightAgent(ms.Agent):
             nextCar = self.checkLane((17, 16), (31, 16))
         elif self.lane == 3:
             nextCar = self.checkLane((15, 15), (0, 15))
+        
         print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
 
-    def step(self):
+    def stage_one(self):
+        print("stage_one")
         choices = [0, 1, 2]
         self.light = random.choice(choices)
         self.checkNextCar()
+    def stage_two(self):
+        pass
 
 class CarAgent(ms.Agent):
 
@@ -131,5 +135,8 @@ class CarAgent(ms.Agent):
         self.distLeft -= self.velocity
         self.model.grid.move_agent(self, newPos)
 
-    def step(self):
+    def stage_one(self):
+        pass
+    def stage_two(self):
+        print("stage_two")
         self.move()

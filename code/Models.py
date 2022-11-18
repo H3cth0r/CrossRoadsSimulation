@@ -6,7 +6,10 @@ from random import choice
 class RoomModel(ms.Model):
     def __init__(self, nCars):
         super().__init__()
-        self.schedule = ms.time.BaseScheduler(self)
+        #self.schedule = ms.time.BaseScheduler(self)
+        self.model_stages = ["stage_one", "stage_two"]
+        self.schedule = ms.time.StagedActivation(self, self.model_stages, shuffle=False)
+
         self.grid = ms.space.MultiGrid(32, 32, torus=True)
         self.directions = [
             [1,0],
@@ -47,28 +50,6 @@ class RoomModel(ms.Model):
                     carsInLane[3] += 1
                     invalidDirection = False
 
-            """
-            direction = choice(self.directions)
-                #up - down - left - right
-                distLeft = 14
-                if direction[0] == 0:
-                    if direction[1] == 1: #going up
-                        startingPos = (16, 0 + carsInLane[0])
-                        distLeft -= carsInLane[0]
-                        carsInLane[0] += 1
-                    else: #going down
-                        startingPos = (16, 31 - carsInLane[1])
-                        distLeft -= carsInLane[1]
-                        carsInLane[1] += 1
-                elif direction[0] == -1: #going left
-                    startingPos = (31 - carsInLane[2], 16)
-                    distLeft -= carsInLane[2]
-                    carsInLane[2] += 1
-                else: #going right
-                    startingPos = (0 + carsInLane[3], 15)
-                    distLeft -= carsInLane[3]
-                    carsInLane[3] += 1
-            """
 
             carro = CarAgent(counter, self, 0, 2, direction, distLeft)
             self.schedule.add(carro)
