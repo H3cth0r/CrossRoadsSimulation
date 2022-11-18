@@ -121,6 +121,23 @@ class CarAgent(ms.Agent):
         self.direction = direction
         self.distLeft = distLeft #14
 
+    def checkTrafficLight(self):
+        if self.direction == [1, 0]:
+            TFL_cell = self.model.grid.get_cell_list_contents([(14, 14)])
+            TFL = [obj for obj in TFL_cell if isinstance(obj, TrafficLightAgent)][0]
+            return TFL
+        elif self.direction == [0, 1]:
+            TFL_cell = self.model.grid.get_cell_list_contents([(17, 14)])
+            TFL = [obj for obj in TFL_cell if isinstance(obj, TrafficLightAgent)][0]
+            return TFL
+        elif self.direction == [-1, 0]:
+            TFL_cell = self.model.grid.get_cell_list_contents([(17, 17)])
+            TFL = [obj for obj in TFL_cell if isinstance(obj, TrafficLightAgent)][0]
+            return TFL
+        else: # [0, -1]
+            TFL_cell = self.model.grid.get_cell_list_contents([(14, 17)])
+            TFL = [obj for obj in TFL_cell if isinstance(obj, TrafficLightAgent)][0]
+            return TFL
 
     def move(self):
         if self.distLeft == 0:
@@ -139,4 +156,6 @@ class CarAgent(ms.Agent):
         pass
     def stage_two(self):
         print("stage_two")
+        TFL = self.checkTrafficLight()
+        print(f"id: {TFL.unique_id},\tlight: {TFL.light},\tagent_position: {self.pos}")
         self.move()
