@@ -32,6 +32,7 @@ class VaccumAgentModel(ms.Agent):
 """
 
 class TrafficLightAgent(ms.Agent):
+    first_it = True
     def __init__(self, unique_id, model, lane):
         super().__init__(unique_id, model)
         self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
@@ -40,6 +41,7 @@ class TrafficLightAgent(ms.Agent):
         self.globalArrivals = {}
         self.tfs = {}
         new_pos = (17, 14)
+        self.nextArrival = (0, 0)
 
     def setTFS(self, tfs):
         self.tfs = tfs
@@ -92,18 +94,38 @@ class TrafficLightAgent(ms.Agent):
                         return car[0]
         return CarAgent(33, self.model, -1, 2, [1, 0], 14)
 
+
+    def hasTheCarPassed(self):
+        if self.lane == 0:
+            nextCar = self.checkLane((16, 31), (16, 15))
+        elif self.lane == 1:
+            nextCar = self.checkLane((15, 15), (15, 0))
+        elif self.lane == 2:
+            nextCar = self.checkLane((0, 16), (16, 16))
+        elif self.lane == 3:
+            nextCar = self.checkLane((16, 15), (31, 15))
+        
+        if nextCar.unique_id == self.nextArrival[0] and nextCar.unique_id != 33:
+            print(f"crossed = {nextCar.unique_id},\tdirection {self.lane}")
+            return True
+        else:
+            print(f"not crossed = {self.nextArrival[0]}\tdirection {self.lane}")
+            return False
+
+
     def checkNextCar(self):
         nextCar = CarAgent(33, self.model, 0, 2, [1, 0], 14)
-        if self.lane == 0:
+        if self.lane == 0:      # up
             nextCar = self.checkLane((16, 15), (16, 0))
-        elif self.lane == 1:
+        elif self.lane == 1:    # down
             nextCar = self.checkLane((15, 17), (15, 31))
-        elif self.lane == 2:
+        elif self.lane == 2:    # left
             nextCar = self.checkLane((17, 16), (31, 16))
-        elif self.lane == 3:
+        elif self.lane == 3:    # right
             nextCar = self.checkLane((15, 15), (0, 15))
         
-        print( f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
+
+        print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
         return nextCar
 
     def stage_one(self):
@@ -135,8 +157,10 @@ class CarAgent(ms.Agent):
         super().__init__(unique_id, model)
         self.type = type
         self.velocity = velocity
+        self.desiredVelocity = velocity
         self.direction = direction
         self.distLeft = distLeft #14
+        self.vision = 3
 
     def checkTrafficLight(self):
         if self.direction == [1, 0]:
@@ -156,11 +180,65 @@ class CarAgent(ms.Agent):
             TFL = [obj for obj in TFL_cell if isinstance(obj, TrafficLightAgent)][0]
             return TFL
 
+    def checkCarFront(self):
+        if ((self.direction == [1, 0]) and (self.pos[0] < 30)):
+            for i in range(self.velocity):
+                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i, self.pos[1])])
+                CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
+                if (CA != []):
+                    print(("GOO1"))
+                    return CA
+                elif (self.velocity == i+1):
+                    return CA
+        elif ((self.direction == [0, 1]) and (self.pos[1] < 30)):
+             for i in range(self.velocity):
+                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]+i+1)])
+                CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
+                if (CA != []):
+                    print(("GOO2"))
+                    return CA
+                elif (self.velocity == i+1):
+                    return CA
+        elif ((self.direction == [-1, 0]) and (self.pos[0] >= 3)):
+             for i in range(self.velocity):
+                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]-i-1, self.pos[1])])
+                CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
+                if (CA != []):
+                    print(("GOO3"))
+                    return CA
+                elif (self.velocity == i+1):
+                    return CA
+        elif ((self.direction == [0, -1]) and (self.pos[1] >= 3)): # [0, -1]
+            for i in range(self.velocity):
+                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]-i-1)])
+                CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
+                if (CA != []):
+                    print(("GOO4"))
+                    return CA
+                elif (self.velocity == i+1):
+                    return CA
+        else:
+            return []  
+
+
     def move(self):
-        if self.distLeft == 0:
-            self.velocity = 0
-        elif self.distLeft <= self.velocity:
-            self.velocity = ceil(self.velocity/2)
+        TFL = self.checkTrafficLight()
+        nextcar = self.checkCarFront()
+        print(nextcar)
+        print(self.velocity)
+        if ((TFL.light == 0) or (TFL.light == 1)):
+            if self.distLeft == 0:
+                self.velocity = 0
+            elif self.distLeft <= self.velocity:
+                self.velocity = ceil(self.velocity/2)
+        # elif (nextcar != []):
+        #     if self.velocity <= 1:
+        #         self.velocity = 0
+        #     else:
+        #         self.velocity = ceil(self.velocity/2)
+        else:
+            if self.velocity <  self.desiredVelocity:
+                self.velocity += 1
 
         dx = (self.direction[0] * self.velocity)
         dy = (self.direction[1] * self.velocity)
