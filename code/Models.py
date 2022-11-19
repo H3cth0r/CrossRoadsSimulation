@@ -81,20 +81,8 @@ class RoomModel(ms.Model):
         self.grid.place_agent(TFS_3, (14, 14))   #right
         
         self.datacollector_currents = ms.DataCollector({
-            "Wealthy Agents": RoomModel.current_weathy_agents,
             "Non Wealthy Agents": RoomModel.current_non_weathy_agents,
         }) 
-
-    @staticmethod
-    def current_weathy_agents(model) -> int:
-        """Return the total of number of weathy agents
-		
-		Args:
-			model (RoomModel): tee simulation model
-			
-		Returns:
-			int: Num of wealthy agents"""
-        return sum([1 for agent in model.schedule.agents if agent.id > 0])
 
     @staticmethod
     def current_non_weathy_agents(model) -> int:
