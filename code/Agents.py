@@ -165,61 +165,52 @@ class CarAgent(ms.Agent):
             return TFL
 
     def checkCarFront(self):
+        isACar = False
         if ((self.direction == [1, 0]) and (self.pos[0] < 30)):
             for i in range(self.velocity):
-                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i, self.pos[1])])
+                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i+1, self.pos[1])])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO1"))
-                    return CA
-                elif (self.velocity == i+1):
-                    return CA
+                    isACar = True
+            return isACar
         elif ((self.direction == [0, 1]) and (self.pos[1] < 30)):
-             for i in range(self.velocity):
+            for i in range(self.velocity):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]+i+1)])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO2"))
-                    return CA
-                elif (self.velocity == i+1):
-                    return CA
+                    isACar = True
+            return isACar
         elif ((self.direction == [-1, 0]) and (self.pos[0] >= 3)):
-             for i in range(self.velocity):
+            for i in range(self.velocity):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]-i-1, self.pos[1])])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO3"))
-                    return CA
-                elif (self.velocity == i+1):
-                    return CA
+                    isACar = True
+            return isACar
         elif ((self.direction == [0, -1]) and (self.pos[1] >= 3)): # [0, -1]
             for i in range(self.velocity):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]-i-1)])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO4"))
-                    return CA
-                elif (self.velocity == i+1):
-                    return CA
+                    isACar = True
+            return isACar
         else:
-            return []  
+            return isACar
 
 
     def move(self):
         TFL = self.checkTrafficLight()
         nextcar = self.checkCarFront()
-        print(nextcar)
-        print(self.velocity)
         if ((TFL.light == 0) or (TFL.light == 1)):
             if self.distLeft == 0:
                 self.velocity = 0
             elif self.distLeft <= self.velocity:
                 self.velocity = ceil(self.velocity/2)
-        # elif (nextcar != []):
-        #     if self.velocity <= 1:
-        #         self.velocity = 0
-        #     else:
-        #         self.velocity = ceil(self.velocity/2)
+        elif (nextcar):
+            if self.velocity == 1:
+                self.velocity = 0
+            else:
+                self.velocity = ceil(self.velocity/2)
         else:
             if self.velocity <  self.desiredVelocity:
                 self.velocity += 1
