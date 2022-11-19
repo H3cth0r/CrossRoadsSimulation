@@ -87,10 +87,6 @@ class TrafficLightAgent(ms.Agent):
                         return car[0]
         return CarAgent(33, self.model, 0, 2, [1, 0], 14)
 
-                
-
-
-
     def checkNextCar(self):
         nextCar = CarAgent(33, self.model, 0, 2, [1, 0], 14)
         if self.lane == 0:
@@ -118,8 +114,10 @@ class CarAgent(ms.Agent):
         super().__init__(unique_id, model)
         self.type = type
         self.velocity = velocity
+        self.desiredVelocity = velocity
         self.direction = direction
         self.distLeft = distLeft #14
+        self.vision = 3
 
     def checkTrafficLight(self):
         if self.direction == [1, 0]:
@@ -140,10 +138,15 @@ class CarAgent(ms.Agent):
             return TFL
 
     def move(self):
-        if self.distLeft == 0:
-            self.velocity = 0
-        elif self.distLeft <= self.velocity:
-            self.velocity = ceil(self.velocity/2)
+        TFL = self.checkTrafficLight()
+        if ((TFL.light == 0) or (TFL.light == 1)):
+            if self.distLeft == 0:
+                self.velocity = 0
+            elif self.distLeft <= self.velocity:
+                self.velocity = ceil(self.velocity/2)
+        else:
+            if self.velocity <  self.desiredVelocity:
+                self.velocity += 1
 
         dx = (self.direction[0] * self.velocity)
         dy = (self.direction[1] * self.velocity)
