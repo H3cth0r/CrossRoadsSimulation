@@ -109,5 +109,6 @@ class RoomModel(ms.Model):
         return sum([1 for agent in model.schedule.agents if agent.id == 0])
 
     def step(self):
+        print("=================")
         self.schedule.step()
 
