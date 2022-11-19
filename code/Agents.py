@@ -32,13 +32,13 @@ class VaccumAgentModel(ms.Agent):
 """
 
 class TrafficLightAgent(ms.Agent):
+    first_it = True
     def __init__(self, unique_id, model, lane):
         super().__init__(unique_id, model)
         self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
         self.light = 1      #0 = red, 1 = yellow, 2 = green
         new_pos = (17, 14)
         self.nextArrival = (0, 0)
-        self.nextArrival = (self.checkNextCar().unique_id, 0)
 
 
     def checkCar(self):
@@ -88,17 +88,17 @@ class TrafficLightAgent(ms.Agent):
                     if len(car)>0:
                         return car[0]
         return CarAgent(33, self.model, 0, 2, [1, 0], 14)
-    
+
 
     def hasTheCarPassed(self):
         if self.lane == 0:
-            nextCar = self.checkLane((16, 31), (16, 16))
+            nextCar = self.checkLane((16, 31), (16, 15))
         elif self.lane == 1:
-            nextCar = self.checkLane((15, 0), (15, 18))
+            nextCar = self.checkLane((15, 15), (15, 0))
         elif self.lane == 2:
-            nextCar = self.checkLane((0, 16), (18, 16))
+            nextCar = self.checkLane((0, 16), (16, 16))
         elif self.lane == 3:
-            nextCar = self.checkLane((31, 15), (16, 15))
+            nextCar = self.checkLane((16, 15), (31, 15))
         
         if nextCar.unique_id == self.nextArrival[0] and nextCar.unique_id != 33:
             print(f"crossed = {nextCar.unique_id},\tdirection {self.lane}")
@@ -119,6 +119,7 @@ class TrafficLightAgent(ms.Agent):
         elif self.lane == 3:    # right
             nextCar = self.checkLane((15, 15), (0, 15))
         
+
         print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
         return nextCar
 
@@ -127,9 +128,12 @@ class TrafficLightAgent(ms.Agent):
         choices = [0, 1, 2]
         self.light = random.choice(choices)
         self.checkNextCar()
+
         self.hasTheCarPassed()
     def stage_two(self):
-        pass
+        if self.first_it== True:
+            self.nextArrival = (self.checkNextCar().unique_id, 0)    
+            self.first_it = False
 
 class CarAgent(ms.Agent):
 
