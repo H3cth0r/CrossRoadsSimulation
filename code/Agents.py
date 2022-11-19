@@ -36,8 +36,13 @@ class TrafficLightAgent(ms.Agent):
         super().__init__(unique_id, model)
         self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
         self.light = 1      #0 = red, 1 = yellow, 2 = green
+        self.localArrival = ()
+        self.globalArrivals = {}
+        self.tfs = {}
         new_pos = (17, 14)
 
+    def setTFS(self, tfs):
+        self.tfs = tfs
 
     def checkCar(self):
         if self.distLeft == 0:
@@ -85,11 +90,7 @@ class TrafficLightAgent(ms.Agent):
                     car = [obj for obj in current_cell if isinstance(obj, CarAgent)]
                     if len(car)>0:
                         return car[0]
-        return CarAgent(33, self.model, 0, 2, [1, 0], 14)
-
-                
-
-
+        return CarAgent(33, self.model, -1, 2, [1, 0], 14)
 
     def checkNextCar(self):
         nextCar = CarAgent(33, self.model, 0, 2, [1, 0], 14)
@@ -102,14 +103,30 @@ class TrafficLightAgent(ms.Agent):
         elif self.lane == 3:
             nextCar = self.checkLane((15, 15), (0, 15))
         
-        print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
+        print( f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
+        return nextCar
 
     def stage_one(self):
+        #change local arrivals
         print("stage_one")
+        nextCar = self.checkNextCar()
+        if nextCar.type != -1:
+            self.nextArrival = (nextCar.uniqueId, self.model.scheduler.steps + (nextCar.distLeft/nextCar.velocity), self.lane)
+        
+        # if nextCar.pos == (self.pos[0], self.pos[1])
+
+    def stage_two(self):
+        #change global arrivals
+        greenLane = -1
+        maxPriority = -1
+        for tf in self.tfs:
+            currArrival = tf.nextArrival
+            
+        #change lights
         choices = [0, 1, 2]
         self.light = random.choice(choices)
-        self.checkNextCar()
-    def stage_two(self):
+        
+    def stage_three(self):
         pass
 
 class CarAgent(ms.Agent):
@@ -155,6 +172,9 @@ class CarAgent(ms.Agent):
     def stage_one(self):
         pass
     def stage_two(self):
+        print("stage_two")
+        pass
+    def syage_three(self):
         print("stage_two")
         TFL = self.checkTrafficLight()
         print(f"id: {TFL.unique_id},\tlight: {TFL.light},\tagent_position: {self.pos}")
