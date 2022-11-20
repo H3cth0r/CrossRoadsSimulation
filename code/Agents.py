@@ -33,6 +33,10 @@ class VaccumAgentModel(ms.Agent):
 
 class TrafficLightAgent(ms.Agent):
     first_it = True
+
+    # Data collector variables
+    counterStepsBeingGreen = 0
+    
     def __init__(self, unique_id, model, lane):
         super().__init__(unique_id, model)
         self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
@@ -132,10 +136,12 @@ class TrafficLightAgent(ms.Agent):
         print(f"TFL: {self.lane}, STAGE ONE")
         #check if self should still be green
         if self.light == 2:
+            self.counterStepsBeingGreen += 1
             if self.hasTheCarPassed():
 
                 #maybe wait x steps in yellow?
                 self.light = 1
+        else:self.counterStepsBeingGreen = 0
         
         #change local arrivals
         
