@@ -1,6 +1,6 @@
 import mesa as ms
-from Agents import GrassAgent, TrafficLightAgent, CarAgent
-from random import choice, randint
+from Agents import GrassAgent, TrafficLightAgent, ScheduledTrafficLightAgent, CarAgent
+from random import choice
 
 def numberOfStepsATrafficLichtIsRed(model) :
     return [agent.counterStepsBeingGreen for agent in model.schedule.agents if type(agent)==TrafficLightAgent and  agent.counterStepsBeingGreen > 0]
@@ -36,6 +36,7 @@ class RoomModel(ms.Model):
         ]
         self.velocities = [1, 2, 3, 4]
 
+        """
         # adding traffic light agents to grid
         TFS_0 =   TrafficLightAgent(0, self, 0)
         TFS_1 =   TrafficLightAgent(1, self, 1)
@@ -43,9 +44,14 @@ class RoomModel(ms.Model):
         TFS_3 =   TrafficLightAgent(3, self, 3)
 
         # connecting traffic light agents to each other
-        self.TFS_list = [TFS_0, TFS_1, TFS_2, TFS_3]
-        for tf in self.TFS_list:
-            tf.setTFS(self.TFS_list)
+        TFS_list = [TFS_0, TFS_1, TFS_2, TFS_3]
+        for tf in TFS_list:
+            tf.setTFS(TFS_list)
+        """
+        TFS_0 =   ScheduledTrafficLightAgent(0, self, 0, 1)
+        TFS_1 =   ScheduledTrafficLightAgent(1, self, 1, 7)
+        TFS_2 =   ScheduledTrafficLightAgent(2, self, 2, 13)
+        TFS_3 =   ScheduledTrafficLightAgent(3, self, 3, 19)
 
         #for TFL in TFS:self.schedule.add(TFL)
         self.schedule.add(TFS_0)
@@ -62,8 +68,8 @@ class RoomModel(ms.Model):
 
         for i in range(nCars):
             #direction = choice(self.directions)
-            #direction = self.directions[i]
-            direction = choice(self.directions)
+            direction = self.directions[i]
+           
             #up - down - left - right
             distLeft = 14
             if direction[0] == 0:
