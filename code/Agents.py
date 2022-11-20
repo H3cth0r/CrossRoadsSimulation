@@ -225,31 +225,36 @@ class CarAgent(ms.Agent):
             TFL = [obj for obj in TFL_cell if isinstance(obj, TrafficLightAgent)][0]
             return TFL
 
-    def checkCarFront(self):
+    def checkCarFront(self, dist_t = -1):
         isACar = False
+        if dist_t == -1:
+            dist_t = self.velocity
+        
         if ((self.direction == [1, 0]) and (self.pos[0] < 30)):
-            for i in range(self.velocity):
-                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i+1, self.pos[1])])
-                CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
-                if (CA != []):
-                    isACar = True
-            return isACar
+            for i in range(dist_t):
+                if self.pos[0]+i+1 < 31:
+                    CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i+1, self.pos[1])])
+                    CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
+                    if (CA != []):
+                        isACar = True
+                return isACar
         elif ((self.direction == [0, 1]) and (self.pos[1] < 30)):
-            for i in range(self.velocity):
-                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]+i+1)])
-                CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
-                if (CA != []):
-                    isACar = True
-            return isACar
+            for i in range(dist_t):
+                if self.pos[1]+i+1 < 31:
+                    CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]+i+1)])
+                    CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
+                    if (CA != []):
+                        isACar = True
+                return isACar
         elif ((self.direction == [-1, 0]) and (self.pos[0] >= 3)):
-            for i in range(self.velocity):
+            for i in range(dist_t):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]-i-1, self.pos[1])])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
                     isACar = True
             return isACar
         elif ((self.direction == [0, -1]) and (self.pos[1] >= 3)): # [0, -1]
-            for i in range(self.velocity):
+            for i in range(dist_t):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]-i-1)])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
