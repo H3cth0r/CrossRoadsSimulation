@@ -28,10 +28,10 @@ chart_currents = ms.visualization.ChartModule(
 
 	],
 	canvas_height=300,
-	data_collector_name="datacollector_currents"
+	data_collector_name="datacollector"
 )
 
-server = ms.visualization.ModularServer(RoomModel, [grid, chart_currents], "Vacuum Room Model", {"nCars":10})
+server = ms.visualization.ModularServer(RoomModel, [grid, chart_currents], "Vacuum Room Model", {"nCars":4})
 server.port = 8521
 server.launch()
 

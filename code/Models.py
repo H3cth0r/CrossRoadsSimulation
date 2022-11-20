@@ -67,9 +67,9 @@ class RoomModel(ms.Model):
         self.counter = 4
 
         for i in range(nCars):
-            #direction = choice(self.directions)
-            #direction = self.directions[i]
             direction = choice(self.directions)
+            #direction = self.directions[i]
+           
             #up - down - left - right
             distLeft = 14
             if direction[0] == 0:

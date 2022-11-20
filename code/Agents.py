@@ -1,7 +1,7 @@
 import mesa as ms
 from math import ceil
 from Models import *
-import random
+from random import choice, randrange
 
 class GrassAgent(ms.Agent):
     def __init__(self, id_t, model):
@@ -234,7 +234,7 @@ class CarAgent(ms.Agent):
         self.vision = 3
         self.TFL = trafficLight
         if self.type == 1: #carefull type
-            self.carefullnessMod = random.randrange(1,4)
+            self.carefullnessMod = randrange(1,4)
         else:
             self.carefullnessMod = 0
         
@@ -331,7 +331,10 @@ class CarAgent(ms.Agent):
             elif self.direction == [-1, 0]: # left
                 self.distLeft = self.pos[0] - self.TFL.pos[0]
             else:                           # right
-                self.distLeft = self.TFL.pos[0] - self.pos[0]                
+                self.distLeft = self.TFL.pos[0] - self.pos[0]      
+
+            # and change velocity
+            self.velocity = choice([1, 2, 3, 4])          
 
         print(f"distLeft: {self.distLeft}")
         
