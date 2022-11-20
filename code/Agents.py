@@ -268,6 +268,8 @@ class CarAgent(ms.Agent):
             return isACar
         else:
             return isACar
+        
+        return isACar
 
 
     def move(self):
@@ -276,15 +278,19 @@ class CarAgent(ms.Agent):
         print(f"Car: {self.unique_id}, direction: {self.direction}, nextCar: {nextcar}")
         # print(self.velocity)
 
-        if (self.distLeft >= 0 and ((self.TFL.light == 0) or (self.TFL.light == 1))):
+        if (nextcar == True):
+            print(f"The velocity is: {self.velocity}")
+            if self.velocity <= 2:
+                if self.velocity == 2:
+                    self.velocity = 1
+                else:
+                    self.velocity = 0
+            else:
+                self.velocity = 1
+        elif (self.distLeft >= 0 and ((self.TFL.light == 0) or (self.TFL.light == 1))):
             if self.distLeft == 0:
                 self.velocity = 0
             elif self.distLeft <= self.velocity + self.carefullnessMod:
-                self.velocity = ceil(self.velocity/2)
-        elif (nextcar):
-            if self.velocity == 1:
-                self.velocity = 0
-            else:
                 self.velocity = ceil(self.velocity/2)
         else:
             if self.velocity <  self.desiredVelocity:
