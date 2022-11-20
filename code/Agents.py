@@ -92,7 +92,7 @@ class TrafficLightAgent(ms.Agent):
                     car = [obj for obj in current_cell if isinstance(obj, CarAgent)]
                     if len(car)>0:
                         return car[0]
-        return CarAgent(33, self.model, -1, 2, [1, 0], 14)
+        return CarAgent(33, self.model, -1, 2, [1, 0], 14, None)
 
 
     def hasTheCarPassed(self):
@@ -103,7 +103,7 @@ class TrafficLightAgent(ms.Agent):
         elif self.lane == 2:
             nextCar = self.checkLane((0, 16), (16, 16))
         elif self.lane == 3:
-            nextCar = self.checkLane((16, 15), (31, 15))
+            nextCar = self.checkLane((16, 15), (32, 15))
         
         if nextCar.unique_id == self.nextArrival[0] and nextCar.unique_id != 33:
             print(f"crossed = {nextCar.unique_id},\tlane {self.lane}")
@@ -114,13 +114,13 @@ class TrafficLightAgent(ms.Agent):
 
 
     def checkNextCar(self):
-        nextCar = CarAgent(33, self.model, 0, 2, [1, 0], 14)
+        nextCar = CarAgent(33, self.model, 0, 2, [1, 0], 14, None)
         if self.lane == 0:      # up
             nextCar = self.checkLane((16, 15), (16, 0))
         elif self.lane == 1:    # down
             nextCar = self.checkLane((15, 17), (15, 31))
         elif self.lane == 2:    # left
-            nextCar = self.checkLane((17, 16), (31, 16))
+            nextCar = self.checkLane((17, 16), (32, 16))
         elif self.lane == 3:    # right
             nextCar = self.checkLane((15, 15), (0, 15))
 
@@ -140,6 +140,7 @@ class TrafficLightAgent(ms.Agent):
         #change local arrivals
         
         nextCar = self.checkNextCar()
+        print(f"nextCar.type: {nextCar.type}")
         if nextCar.type != -1:
             nextCarSpeed = nextCar.velocity
             if nextCarSpeed == 0:
@@ -191,7 +192,7 @@ class TrafficLightAgent(ms.Agent):
 
 class CarAgent(ms.Agent):
 
-    def __init__(self, unique_id, model, type, velocity, direction, distLeft):
+    def __init__(self, unique_id, model, type, velocity, direction, distLeft, trafficLight):
         super().__init__(unique_id, model)
         self.type = type
         self.velocity = velocity
@@ -199,6 +200,12 @@ class CarAgent(ms.Agent):
         self.direction = direction
         self.distLeft = distLeft #14
         self.vision = 3
+        self.TFL = trafficLight
+        if self.type == 1: #carefull type
+            self.carefullnessMod = random.randrange(1,4)
+        else:
+            self.carefullnessMod = 0
+        
 
     def checkTrafficLight(self):
         if self.direction == [1, 0]:
@@ -253,15 +260,15 @@ class CarAgent(ms.Agent):
 
 
     def move(self):
-        TFL = self.checkTrafficLight()
+        # TFL = self.checkTrafficLight()
         nextcar = self.checkCarFront()
         print(f"Car: {self.unique_id}, direction: {self.direction}, nextCar: {nextcar}")
-        #print(self.velocity)
+        # print(self.velocity)
 
-        if ((TFL.light == 0) or (TFL.light == 1)):
+        if (self.distLeft >= 0 and ((self.TFL.light == 0) or (self.TFL.light == 1))):
             if self.distLeft == 0:
                 self.velocity = 0
-            elif self.distLeft <= self.velocity:
+            elif self.distLeft <= self.velocity + self.carefullnessMod:
                 self.velocity = ceil(self.velocity/2)
         elif (nextcar):
             if self.velocity == 1:
@@ -272,12 +279,26 @@ class CarAgent(ms.Agent):
             if self.velocity <  self.desiredVelocity:
                 self.velocity += 1
 
-        dx = (self.direction[0] * self.velocity)
+        dx = (self.direction[0] * self.velocity) 
         dy = (self.direction[1] * self.velocity)
 
-        newPos = (self.pos[0] + dx, self.pos[1] + dy)
         self.distLeft -= self.velocity
+        print(f"prev pos: {self.pos}")
+        newPos = (self.pos[0] + dx, self.pos[1] + dy)
         self.model.grid.move_agent(self, newPos)
+
+        if self.distLeft < -17:
+            if self.direction == [0, 1]:    # up
+                self.distLeft = self.TFL.pos[1] - self.pos[1]
+            elif self.direction == [0, -1]: # down
+                self.distLeft = self.pos[1] - self.TFL.pos[1]
+            elif self.direction == [-1, 0]: # left
+                self.distLeft = self.pos[0] - self.TFL.pos[0]
+            else:                           # right
+                self.distLeft = self.TFL.pos[0] - self.pos[0]                
+
+        print(f"distLeft: {self.distLeft}")
+        
 
     def stage_one(self):
         pass
@@ -286,6 +307,6 @@ class CarAgent(ms.Agent):
         pass
     def stage_three(self):
         #print("stage_three")
-        TFL = self.checkTrafficLight()
-        #print(f"id: {TFL.unique_id},\tlight: {TFL.light},\tagent_position: {self.pos}")
+        
+        #print(f"id: {self.TFL.unique_id},\tlight: {self.TFL.light},\tagent_position: {self.pos}")
         self.move()
