@@ -190,8 +190,34 @@ class TrafficLightAgent(ms.Agent):
     def stage_three(self):
         pass
 
-class CarAgent(ms.Agent):
+class ScheduledTrafficLightAgent(ms.Agent):
+    first_it = True
+    def __init__(self, unique_id, model, lane, counter):
+        super().__init__(unique_id, model)
+        self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
+        self.light = 0      #0 = red, 1 = yellow, 2 = green
+        self.counter = counter
 
+    def stage_one(self):
+        if self.counter == 25:
+            self.counter = 1
+        
+        if self.counter == 1:
+            self.light = 2
+        elif self.counter == 4:
+            self.light = 1
+        elif self.counter == 6:
+            self.light = 0
+        
+        self.counter += 1
+
+    def stage_two(self):
+        pass
+
+    def stage_three(self):
+        pass
+
+class CarAgent(ms.Agent):
     def __init__(self, unique_id, model, type, velocity, direction, distLeft, trafficLight):
         super().__init__(unique_id, model)
         self.type = type
@@ -206,7 +232,6 @@ class CarAgent(ms.Agent):
         else:
             self.carefullnessMod = 0
         
-
     def checkTrafficLight(self):
         if self.direction == [1, 0]:
             TFL_cell = self.model.grid.get_cell_list_contents([(14, 14)])
