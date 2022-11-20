@@ -41,7 +41,7 @@ class TrafficLightAgent(ms.Agent):
         self.globalArrivals = {}
         self.tfs = {}
         new_pos = (17, 14)
-        self.nextArrival = (0, 0)
+        self.nextArrival = (-1, 100000, -1)
 
     def setTFS(self, tfs):
         self.tfs = tfs
@@ -106,10 +106,10 @@ class TrafficLightAgent(ms.Agent):
             nextCar = self.checkLane((16, 15), (31, 15))
         
         if nextCar.unique_id == self.nextArrival[0] and nextCar.unique_id != 33:
-            print(f"crossed = {nextCar.unique_id},\tdirection {self.lane}")
+            print(f"crossed = {nextCar.unique_id},\tlane {self.lane}")
             return True
         else:
-            print(f"not crossed = {self.nextArrival[0]}\tdirection {self.lane}")
+            print(f"not crossed = {self.nextArrival[0]}\tlane {self.lane}")
             return False
 
 
@@ -123,30 +123,68 @@ class TrafficLightAgent(ms.Agent):
             nextCar = self.checkLane((17, 16), (31, 16))
         elif self.lane == 3:    # right
             nextCar = self.checkLane((15, 15), (0, 15))
-        
 
-        print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
+        #print(f"TFL : {self.unique_id},\tlane: {self.lane},\tvel: {nextCar.velocity},\tCar_id: {nextCar.unique_id}, Position: {nextCar.pos}")
         return nextCar
 
     def stage_one(self):
+        print("---")
+        print(f"TFL: {self.lane}, STAGE ONE")
+        #check if self should still be green
+        if self.light == 2:
+            if self.hasTheCarPassed():
+
+                #maybe wait x steps in yellow?
+                self.light = 1
+        
         #change local arrivals
-        print("stage_one")
+        
         nextCar = self.checkNextCar()
         if nextCar.type != -1:
-            self.nextArrival = (nextCar.uniqueId, self.model.scheduler.steps + (nextCar.distLeft/nextCar.velocity), self.lane)
+            nextCarSpeed = nextCar.velocity
+            if nextCarSpeed == 0:
+                nextCarSpeed = 1
+            self.nextArrival = (nextCar.unique_id, self.model.schedule.steps + (nextCar.distLeft/nextCarSpeed), self.lane)
+        else:
+            self.nextArrival = (-1, 100000, -1)
         
+        print(f"TFL: {self.lane}, nextArrival: {self.nextArrival}")
         # if nextCar.pos == (self.pos[0], self.pos[1])
 
     def stage_two(self):
         #change global arrivals
+        print("---")
+        print(f"TFL: {self.lane}, STAGE TWO")
         greenLane = -1
         maxPriority = -1
+        nextGlobalArrival = (-1, 100000, -1)
         for tf in self.tfs:
-            currArrival = tf.nextArrival
+            if tf.light == 2:
+                greenLane = tf.lane
+                nextGlobalArrival = tf.nextArrival 
+                break
+            print(f"Comparing {tf.nextArrival} to {nextGlobalArrival}")
+            if tf.nextArrival[1] < nextGlobalArrival[1]:
+                nextGlobalArrival = tf.nextArrival
             
+        print(f"Next global arrival: {nextGlobalArrival}")
+        print(f"greenLane: {greenLane}, nextGlobalArrival: {nextGlobalArrival}, self.lane: {self.lane}")
+        # if there's no cars, then nextGlobalArrival[0] == -1
+        if nextGlobalArrival[0] == -1:
+            self.light = 1
+
+        # if there's no green light, a green light can be chosen based on nextGlobalArrival
+        # ideally, we should wait until prior greenlight turns red
+        elif self.light == 2 or (greenLane == -1 and nextGlobalArrival[2] == self.lane):
+            self.light = 2
+            print(f"CHANGED {self.lane} LIGHT TO {self.light}")
+        else:
+            self.light = 0
+            print(f"CHANGED {self.lane} LIGHT TO {self.light}")
+
         #change lights
-        choices = [0, 1, 2]
-        self.light = random.choice(choices)
+        #choices = [0, 1, 2]
+        #self.light = random.choice(choices)
         
     def stage_three(self):
         pass
@@ -183,10 +221,10 @@ class CarAgent(ms.Agent):
     def checkCarFront(self):
         if ((self.direction == [1, 0]) and (self.pos[0] < 30)):
             for i in range(self.velocity):
-                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i, self.pos[1])])
+                CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]+i+1, self.pos[1])])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO1"))
+                    #print(("GOO1"))
                     return CA
                 elif (self.velocity == i+1):
                     return CA
@@ -195,7 +233,7 @@ class CarAgent(ms.Agent):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]+i+1)])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO2"))
+                    #print(("GOO2"))
                     return CA
                 elif (self.velocity == i+1):
                     return CA
@@ -204,7 +242,7 @@ class CarAgent(ms.Agent):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0]-i-1, self.pos[1])])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO3"))
+                    #print(("GOO3"))
                     return CA
                 elif (self.velocity == i+1):
                     return CA
@@ -213,7 +251,7 @@ class CarAgent(ms.Agent):
                 CA_cell = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1]-i-1)])
                 CA = [obj for obj in CA_cell if isinstance(obj, CarAgent)]
                 if (CA != []):
-                    print(("GOO4"))
+                    #print(("GOO4"))
                     return CA
                 elif (self.velocity == i+1):
                     return CA
@@ -224,8 +262,9 @@ class CarAgent(ms.Agent):
     def move(self):
         TFL = self.checkTrafficLight()
         nextcar = self.checkCarFront()
-        print(nextcar)
-        print(self.velocity)
+        
+        print(f"Car: {self.unique_id}, direction: {self.direction}, nextCar: {nextcar}")
+        #print(self.velocity)
         if ((TFL.light == 0) or (TFL.light == 1)):
             if self.distLeft == 0:
                 self.velocity = 0
@@ -250,10 +289,10 @@ class CarAgent(ms.Agent):
     def stage_one(self):
         pass
     def stage_two(self):
-        print("stage_two")
+        #print("stage_two")
         pass
-    def syage_three(self):
-        print("stage_two")
+    def stage_three(self):
+        #print("stage_three")
         TFL = self.checkTrafficLight()
-        print(f"id: {TFL.unique_id},\tlight: {TFL.light},\tagent_position: {self.pos}")
+        #print(f"id: {TFL.unique_id},\tlight: {TFL.light},\tagent_position: {self.pos}")
         self.move()
