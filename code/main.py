@@ -16,8 +16,15 @@ def agent_PT(agent):
 			PT = {"Shape": "circle","Color": "yellow","Filled": "true","Layer": 1,"r" : 0.5}
 		else:
 			PT = {"Shape": "circle","Color": "white","Filled": "true","Layer": 1,"r" : 0.5}
-	else:
-		PT = {"Shape": "rect", "Color": "red", "Filled": "true", "Layer": 1, "w": 1, "h":1}
+	else:		# This is the option for the car agent
+		if		agent.carefullnessMod	== 0:
+			PT = {"Shape": "rect", "Color": "red", "Filled": "true", "Layer": 1, "w": 1, "h":1}
+		elif	agent.carefullnessMod	== 1:
+			PT = {"Shape": "rect", "Color": "blue", "Filled": "true", "Layer": 1, "w": 1, "h":1}
+		elif	agent.carefullnessMod	== 2:
+			PT = {"Shape": "rect", "Color": "grey", "Filled": "true", "Layer": 1, "w": 1, "h":1}
+		elif	agent.carefullnessMod	== 3:
+			PT = {"Shape": "rect", "Color": "orange", "Filled": "true", "Layer": 1, "w": 1, "h":1}
 		
 	return PT
 

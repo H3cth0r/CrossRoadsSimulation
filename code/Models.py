@@ -1,6 +1,7 @@
 import mesa as ms
 from Agents import GrassAgent, TrafficLightAgent, ScheduledTrafficLightAgent, CarAgent
 from random import choice
+import random
 
 def numberOfStepsATrafficLichtIsRed(model) :
     return [agent.counterStepsBeingGreen for agent in model.schedule.agents if type(agent)==TrafficLightAgent and  agent.counterStepsBeingGreen > 0]
@@ -19,6 +20,10 @@ def getCarsDirections(model):
 
 def getNumberOfCarsInEachLane(model):
     return model.carsInLane
+
+def getNumberOfCrashes(model):
+    return [agent.crashStatus for agent in model.schedule.agents if type(agent) == CarAgent]
+
 
 class RoomModel(ms.Model):
     def __init__(self, nCars):
@@ -94,7 +99,8 @@ class RoomModel(ms.Model):
                 self.carsInLane[3] += 1
                 trafficLight = TFS_3
 
-            carro = CarAgent(self.counter, self, 0, choice(self.velocities), direction, distLeft, trafficLight)
+            carType = random.randrange(0, 2)
+            carro = CarAgent(self.counter, self, carType, choice(self.velocities), direction, distLeft, trafficLight)
             self.schedule.add(carro)
             self.grid.place_agent(carro, startingPos)
             self.counter += 1
@@ -115,7 +121,8 @@ class RoomModel(ms.Model):
                              "AgentsVelocities"   : getCarsVelocities,
                              "CarsDirections"     : getCarsDirections,
                              "DesiredVelocities"  : getDesiredVelocities,
-                             "NumberOfCarsPerLane": getNumberOfCarsInEachLane}
+                             "NumberOfCarsPerLane": getNumberOfCarsInEachLane,
+                             "NumberOfCrashed"    : getNumberOfCrashes}
         ) 
 
     @staticmethod

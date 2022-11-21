@@ -2,6 +2,7 @@ import mesa as ms
 from math import ceil
 from Models import *
 from random import choice, randrange
+import random
 
 class GrassAgent(ms.Agent):
     def __init__(self, id_t, model):
@@ -224,6 +225,9 @@ class ScheduledTrafficLightAgent(ms.Agent):
         pass
 
 class CarAgent(ms.Agent):
+
+    crashStatus = 0
+
     def __init__(self, unique_id, model, type, velocity, direction, distLeft, trafficLight):
         super().__init__(unique_id, model)
         self.type = type
@@ -296,53 +300,64 @@ class CarAgent(ms.Agent):
         
         return isACar
 
+    def carHasCrashed(self):
+        print(len(self.model.grid.get_cell_list_contents([self.pos])))
+        if len(self.model.grid.get_cell_list_contents([self.pos])) > 1:
+            self.crashStatus = 1
+            return True
+        return False
 
     def move(self):
-        # TFL = self.checkTrafficLight()
         nextcar = self.checkCarFront()
-        print(f"Car: {self.unique_id}, direction: {self.direction}, nextCar: {nextcar}")
-        # print(self.velocity)
+        if not self.carHasCrashed():
+            print(f"Car: {self.unique_id}, direction: {self.direction}, nextCar: {nextcar}")
+            # print(self.velocity)
 
-        if (nextcar == True):
-            print(f"The velocity is: {self.velocity}")
-            if self.velocity <= 2:
-                if self.velocity == 2:
-                    self.velocity = 1
+            if (nextcar == True):
+                print(f"The velocity is: {self.velocity}")
+                if self.velocity <= 2:
+                    if self.velocity == 2:
+                        self.velocity = 1
+                    else:
+                        self.velocity = 0
                 else:
-                    self.velocity = 0
+                    self.velocity = 1
+            elif (self.distLeft >= 0 and ((self.TFL.light == 0) or (self.TFL.light == 1))):
+                if self.distLeft == 0:
+                    list_bool = [True, False]
+                    randomlist = random.choices(list_bool, weights=(90, 10), k = 1)
+                    if randomlist[0] == True:
+                        self.velocity = 0
+                    else:
+                        self.velocity = 1
+                elif self.distLeft <= self.velocity + self.carefullnessMod:
+                    self.velocity = ceil(self.velocity/2)
             else:
-                self.velocity = 1
-        elif (self.distLeft >= 0 and ((self.TFL.light == 0) or (self.TFL.light == 1))):
-            if self.distLeft == 0:
-                self.velocity = 0
-            elif self.distLeft <= self.velocity + self.carefullnessMod:
-                self.velocity = ceil(self.velocity/2)
-        else:
-            if self.velocity <  self.desiredVelocity:
-                self.velocity += 1
+                if self.velocity <  self.desiredVelocity:
+                    self.velocity += 1
 
-        dx = (self.direction[0] * self.velocity) 
-        dy = (self.direction[1] * self.velocity)
+            dx = (self.direction[0] * self.velocity) 
+            dy = (self.direction[1] * self.velocity)
 
-        self.distLeft -= self.velocity
-        print(f"prev pos: {self.pos}")
-        newPos = (self.pos[0] + dx, self.pos[1] + dy)
-        self.model.grid.move_agent(self, newPos)
+            self.distLeft -= self.velocity
+            print(f"prev pos: {self.pos}")
+            newPos = (self.pos[0] + dx, self.pos[1] + dy)
+            self.model.grid.move_agent(self, newPos)
 
-        if self.distLeft < -17:
-            if self.direction == [0, 1]:    # up
-                self.distLeft = self.TFL.pos[1] - self.pos[1]
-            elif self.direction == [0, -1]: # down
-                self.distLeft = self.pos[1] - self.TFL.pos[1]
-            elif self.direction == [-1, 0]: # left
-                self.distLeft = self.pos[0] - self.TFL.pos[0]
-            else:                           # right
-                self.distLeft = self.TFL.pos[0] - self.pos[0]      
+            if self.distLeft < -17:
+                if self.direction == [0, 1]:    # up
+                    self.distLeft = self.TFL.pos[1] - self.pos[1]
+                elif self.direction == [0, -1]: # down
+                    self.distLeft = self.pos[1] - self.TFL.pos[1]
+                elif self.direction == [-1, 0]: # left
+                    self.distLeft = self.pos[0] - self.TFL.pos[0]
+                else:                           # right
+                    self.distLeft = self.TFL.pos[0] - self.pos[0]      
 
-            # and change velocity
-            self.velocity = choice([1, 2, 3, 4])          
+                # and change velocity
+                self.velocity = choice([1, 2, 3, 4])          
 
-        print(f"distLeft: {self.distLeft}")
+            print(f"distLeft: {self.distLeft}")
         
 
     def stage_one(self):

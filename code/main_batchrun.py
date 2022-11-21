@@ -4,7 +4,8 @@ from Agents import *
 import pandas as pd
 import matplotlib.pyplot as plt
 
-params = {"nCars"   :   range(10) }
+
+params = {"nCars"   :   range(2, 4) }
 
 results = ms.batch_run(
     RoomModel,
@@ -16,5 +17,7 @@ results = ms.batch_run(
     display_progress=True
 )
 
+
 results_df = pd.DataFrame(results)
 print(results_df.keys())
+results_df
