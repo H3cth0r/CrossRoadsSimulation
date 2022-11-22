@@ -36,7 +36,6 @@ class TrafficLightAgent(ms.Agent):
     first_it = True
 
     # Data collector variables
-    counterStepsBeingGreen = 0
     
     def __init__(self, unique_id, model, lane):
         super().__init__(unique_id, model)
@@ -47,6 +46,7 @@ class TrafficLightAgent(ms.Agent):
         self.tfs = {}
         new_pos = (17, 14)
         self.nextArrival = (-1, 100000, -1)
+        self.counterStepsBeingGreen = 0
 
     def setTFS(self, tfs):
         self.tfs = tfs
@@ -204,6 +204,7 @@ class ScheduledTrafficLightAgent(ms.Agent):
         self.lane = lane    #0 = up, 1 = down, 2 = left, 3 = right
         self.light = 0      #0 = red, 1 = yellow, 2 = green
         self.counter = counter
+        self.counterStepsBeingGreen = 0
 
     def stage_one(self):
         if self.counter == 25:
@@ -215,6 +216,8 @@ class ScheduledTrafficLightAgent(ms.Agent):
             self.light = 1
         elif self.counter == 6:
             self.light = 0
+        if self.light == 2:
+            self.counterStepsBeingGreen += 1
         
         self.counter += 1
 

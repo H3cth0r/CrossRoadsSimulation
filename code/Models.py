@@ -4,10 +4,10 @@ from random import choice
 import random
 
 def numberOfStepsATrafficLichtIsRed(model) :
-    return [agent.counterStepsBeingGreen for agent in model.schedule.agents if type(agent)==TrafficLightAgent and  agent.counterStepsBeingGreen > 0]
+    return [agent.counterStepsBeingGreen for agent in model.schedule.agents if type(agent) == ScheduledTrafficLightAgent or type(agent) == TrafficLightAgent]
 
 def getLightStatusOfEachLane(model):
-    return [agent.light for agent in model.schedule.agents if type(agent) == TrafficLightAgent]
+    return [agent.light for agent in model.schedule.agents if type(agent) == ScheduledTrafficLightAgent or type(agent) == TrafficLightAgent]
 
 def getDesiredVelocities(model):
     return [agent.desiredVelocity for agent in model.schedule.agents if type(agent) == CarAgent]
@@ -52,7 +52,8 @@ class RoomModel(ms.Model):
         TFS_list = [TFS_0, TFS_1, TFS_2, TFS_3]
         for tf in TFS_list:
             tf.setTFS(TFS_list)
-        """
+        """        
+        
         TFS_0 =   ScheduledTrafficLightAgent(0, self, 0, 1)
         TFS_1 =   ScheduledTrafficLightAgent(1, self, 1, 7)
         TFS_2 =   ScheduledTrafficLightAgent(2, self, 2, 13)
